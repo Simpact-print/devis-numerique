@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration Prix Simpact</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --cyan: #00B8D4; --magenta: #E91E63; --green: #4CAF50; --black: #1a1a1a; --light-gray: #e8e8e8; }
+        body { font-family: 'Outfit', sans-serif; background: #f0f2f5; padding: 2rem; color: var(--black); }
+        .container { max-width: 1400px; margin: 0 auto; }
+        header { background: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .card { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h2 { border-left: 4px solid var(--cyan); padding-left: 1rem; margin-bottom: 1rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--light-gray); }
+        th { background: #fafafa; font-weight: 600; }
+        input[type="number"] { padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%; }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; color: white; background: var(--cyan); }
+        .save-btn { background: linear-gradient(135deg, var(--green), #45a049); font-size: 1.1rem; }
+        .delete-btn { background: var(--magenta); padding: 0.4rem 0.8rem; font-size: 0.9rem; }
+        .tabs { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .tab-btn { background: white; color: #555; padding: 0.8rem 1.5rem; border-radius: 6px; cursor: pointer; border: 1px solid #ddd; }
+        .tab-btn.active { background: var(--cyan); color: white; border-color: var(--cyan); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎛️ Administration des Prix</h1>
+            <button class="btn save-btn" onclick="saveAllPrices()">💾 Sauvegarder et Télécharger JSON</button>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('flyers')">Flyers</button>
+            <button class="tab-btn" onclick="switchTab('cartes')">Cartes</button>
+            <button class="tab-btn" onclick="switchTab('depliants')">Dépliants</button>
+            <button class="tab-btn" onclick="switchTab('brochures')">Brochures</button>
+            <button class="tab-btn" onclick="switchTab('fixes')">Prix Fixes</button>
+        </div>
+
+        <div id="flyers" class="tab-content active">
+            <div class="card">
+                <h2>Flyers - Recto</h2>
+                <table id="flyer-recto-table"><thead><tr><th>Quantité</th><th>Prix (DT)</th><th>Action</th></tr></thead><tbody></tbody></table>
+                <button class="btn" onclick="addRow('flyer-recto')">+ Ajouter</button>
+            </div>
+            <div class="card">
+                <h2>Flyers - Recto/Verso</h2>
+                <table id="flyer-rectoverso-table"><thead><tr><th>Quantité</th><th>Prix (DT)</th><th>Action</th></tr></thead><tbody></tbody></table>
+                <button class="btn" onclick="addRow('flyer-rectoverso')">+ Ajouter</button>
+            </div>
+        </div>
+
+        <div id="cartes" class="tab-content">
+            <div class="card">
+                <h2>Cartes - Standard</h2>
+                <table id="carte-recto-table"><thead><tr><th>Quantité</th><th>Prix (DT)</th><th>Action</th></tr></thead><tbody></tbody></table>
+                <button class="btn" onclick="addRow('carte-recto')">+ Ajouter</button>
+            </div>
+            <div class="card">
+                <h2>Cartes - Pelliculées</h2>
+                <table id="carte-pellicule-table"><thead><tr><th>Quantité</th><th>Prix (DT)</th><th>Action</th></tr></thead><tbody></tbody></table>
+                <button class="btn" onclick="addRow('carte-pellicule')">+ Ajouter</button>
+            </div>
+        </div>
+
+        <div id="depliants" class="tab-content">
+            <div class="card">
+                <h2>Dépliants 3 volets</h2>
+                <table id="depliant-table"><thead><tr><th>Quantité</th><th>Prix (DT)</th><th>Action</th></tr></thead><tbody></tbody></table>
+                <button class="btn" onclick="addRow('depliant')">+ Ajouter</button>
+            </div>
+        </div>
+
+        <div id="brochures" class="tab-content">
+            <div class="card">
+                <h2>Brochures - Paliers prix feuille couleur</h2>
+                <table id="brochure-paliers-table"><thead><tr><th>Min</th><th>Max</th><th>Prix/feuille (DT)</th><th>Action</th></tr></thead><tbody></tbody></table>
+                <button class="btn" onclick="addRow('brochure-paliers')">+ Ajouter</button>
+            </div>
+        </div>
+
+        <div id="fixes" class="tab-content">
+            <div class="card">
+                <h2>Coefficients et Prix Fixes</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div><label>Prix Pelliculage (DT/unité)</label><input type="number" id="prix-pelliculage" step="0.01"></div>
+                    <div><label>Prix Feuille N&B (DT)</label><input type="number" id="prix-feuille-nb" step="0.01"></div>
+                    <div><label>Supplément Offset 100gr (DT)</label><input type="number" id="prix-offset-100" step="0.001"></div>
+                    <div><label>Supplément Couché (DT/g)</label><input type="number" id="prix-gramme-couche" step="0.0001"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let prixData = {};
+        async function loadPrices() {
+            try {
+                const response = await fetch('prix_config.json');
+                prixData = await response.json();
+                loadTable('flyer-recto', prixData.tarifs.flyer.recto);
+                loadTable('flyer-rectoverso', prixData.tarifs.flyer.rectoVerso);
+                loadTable('carte-recto', prixData.tarifs.carte.recto);
+                loadTable('carte-pellicule', prixData.tarifs.carte.pellicule);
+                loadTable('depliant', prixData.tarifs.depliant);
+                loadBrochurePaliers(prixData.paliers_brochure.couleur_recto_verso);
+                
+                document.getElementById('prix-pelliculage').value = prixData.prix_fixes.pelliculage;
+                document.getElementById('prix-feuille-nb').value = prixData.prix_fixes.feuille_nb;
+                document.getElementById('prix-offset-100').value = prixData.prix_fixes.offset_100;
+                document.getElementById('prix-gramme-couche').value = prixData.prix_fixes.gramme_couche;
+            } catch (error) { alert('Erreur chargement prix_config.json'); }
+        }
+
+        function loadTable(id, data) {
+            const tbody = document.querySelector(`#${id}-table tbody`);
+            tbody.innerHTML = '';
+            data.forEach((item, idx) => {
+                tbody.innerHTML += `<tr>
+                    <td><input type="number" value="${item.qty}" class="qty"></td>
+                    <td><input type="number" value="${item.price}" step="0.01" class="price"></td>
+                    <td><button class="btn delete-btn" onclick="this.closest('tr').remove()">Suppr.</button></td>
+                </tr>`;
+            });
+        }
+        
+        function loadBrochurePaliers(data) {
+             const tbody = document.querySelector(`#brochure-paliers-table tbody`);
+            tbody.innerHTML = '';
+            data.forEach((item) => {
+                tbody.innerHTML += `<tr>
+                    <td><input type="number" value="${item.min}" class="min"></td>
+                    <td><input type="number" value="${item.max}" class="max"></td>
+                    <td><input type="number" value="${item.price}" step="0.01" class="price"></td>
+                    <td><button class="btn delete-btn" onclick="this.closest('tr').remove()">Suppr.</button></td>
+                </tr>`;
+            });
+        }
+
+        function addRow(id) {
+            const tbody = document.querySelector(`#${id}-table tbody`);
+            if(id === 'brochure-paliers') {
+                 tbody.innerHTML += `<tr>
+                    <td><input type="number" value="0" class="min"></td>
+                    <td><input type="number" value="0" class="max"></td>
+                    <td><input type="number" value="0" step="0.01" class="price"></td>
+                    <td><button class="btn delete-btn" onclick="this.closest('tr').remove()">Suppr.</button></td>
+                </tr>`;
+            } else {
+                tbody.innerHTML += `<tr>
+                    <td><input type="number" value="100" class="qty"></td>
+                    <td><input type="number" value="0" step="0.01" class="price"></td>
+                    <td><button class="btn delete-btn" onclick="this.closest('tr').remove()">Suppr.</button></td>
+                </tr>`;
+            }
+        }
+
+        function getTableData(id) {
+            return Array.from(document.querySelectorAll(`#${id}-table tbody tr`)).map(tr => ({
+                qty: parseInt(tr.querySelector('.qty').value),
+                price: parseFloat(tr.querySelector('.price').value)
+            }));
+        }
+        
+        function getPaliersData() {
+             return Array.from(document.querySelectorAll(`#brochure-paliers-table tbody tr`)).map(tr => ({
+                min: parseInt(tr.querySelector('.min').value),
+                max: parseInt(tr.querySelector('.max').value),
+                price: parseFloat(tr.querySelector('.price').value)
+            }));
+        }
+
+        function switchTab(id) {
+            document.querySelectorAll('.tab-content').forEach(d => d.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function saveAllPrices() {
+            const newData = { ...prixData }; // Cloner l'existant
+            newData.tarifs.flyer.recto = getTableData('flyer-recto');
+            newData.tarifs.flyer.rectoVerso = getTableData('flyer-rectoverso');
+            newData.tarifs.carte.recto = getTableData('carte-recto');
+            newData.tarifs.carte.pellicule = getTableData('carte-pellicule');
+            newData.tarifs.depliant = getTableData('depliant');
+            newData.paliers_brochure.couleur_recto_verso = getPaliersData();
+            
+            newData.prix_fixes.pelliculage = parseFloat(document.getElementById('prix-pelliculage').value);
+            newData.prix_fixes.feuille_nb = parseFloat(document.getElementById('prix-feuille-nb').value);
+            newData.prix_fixes.offset_100 = parseFloat(document.getElementById('prix-offset-100').value);
+            newData.prix_fixes.gramme_couche = parseFloat(document.getElementById('prix-gramme-couche').value);
+
+            const dataStr = JSON.stringify(newData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'prix_config.json';
+            link.click();
+        }
+
+        loadPrices();
+    </script>
+</body>
+</html>
